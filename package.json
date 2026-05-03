@@ -1,0 +1,24 @@
+{
+  "name": "sustainable-digital-project",
+  "version": "1.0.0",
+  "description": "rien pour l'instant",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MegaiSa/Sustainable-digital-project.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MegaiSa/Sustainable-digital-project/issues"
+  },
+  "homepage": "https://github.com/MegaiSa/Sustainable-digital-project#readme",
+  "dependencies": {
+    "sqlite3": "^6.0.1"
+  }
+}
