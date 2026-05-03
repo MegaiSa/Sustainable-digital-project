@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="quiz.html">Quiz</a></li>
+            <li><a href="register.html">Register</a></li>
+        </ul>
+    </nav>
+    <div class="container">
+        <section id="register">
+            <h1>Create your account</h1>
+            <form action="#" method="post">
+                <div>
+                    <label for="nickname">Full nickname</label>
+                    <input type="text" id="nickname" name="nickname" placeholder="Your full nickname" required>
+                </div>
+                <div>
+                    <label for="email">Email address</label>
+                    <input type="email" id="email" name="email" placeholder="you@example.com" required>
+                </div>
+                <div>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Create a password" required>
+                </div>
+                <div>
+                    <label for="confirm-password">Confirm password</label>
+                    <input type="password" id="confirm-password" name="confirm-password" placeholder="Repeat your password" required>
+                </div>
+                <button type="submit">Register</button>
+            </form>
+        </section>
+        <section id="login">
+            <h1>Log in to your account</h1>
+            <form action="#" method="post">
+                <div>
+                    <label for="login-email">Email address</label>
+                    <input type="email" id="login-email" name="email" placeholder="you@example.com" required>
+                </div>
+                <div>
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" name="password" placeholder="Your password" required>
+                </div>
+                <button type="submit">Log in</button>
+            </form>
+        </section>
+    </div>
+</body>
+</html>
