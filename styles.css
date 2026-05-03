@@ -141,3 +141,41 @@ section,
   transform: translateY(-4px);
   box-shadow: 0 8px 16px rgba(42, 127, 98, 0.15);
 }
+
+.container form div {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.container label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.container input {
+  width: 90%;
+  padding: 12px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.container button {
+  width: 100%;
+  padding: 12px 14px;
+  margin-top: 12px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--surface);
+  font-weight: 600;
+}
+
+.container button:hover {
+  background: var(--accent-soft);
+}
