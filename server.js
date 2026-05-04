@@ -205,7 +205,7 @@ app.post('/api/quizzes/:id/questions', requireAuth, (req, res) => {
     db.getQuizOwner(req.params.id, (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: 'Quiz not found.' });
-        if (row.author_id !== req.session.userId) {
+        if (row.user_id !== req.session.userId) {
             return res.status(403).json({ error: 'Only the author can add questions.' });
         }
 
