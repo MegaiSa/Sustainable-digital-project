@@ -21,21 +21,23 @@
         <button class="create-btn" onclick="createQuiz()">Create a Quiz</button>
         <ul class="quiz-list">
             <li>
-                <a href="#">Quiz 1: Sustainable Systems</a>
-                <button class="modify-btn" onclick="modifyQuiz(this)">Modify</button>
-                <button class="delete-btn" onclick="deleteCategory(this)">Delete</button>
-            </li>
-            <li>
-                <a href="#">Quiz 2: Digital Sustainability</a>
-                <button class="modify-btn" onclick="modifyQuiz(this)">Modify</button>
-                <button class="delete-btn" onclick="deleteCategory(this)">Delete</button>
-            </li>
-            <li>
-                <a href="#">Quiz 3: Graph Theory Basics</a>
-                <button class="modify-btn" onclick="modifyQuiz(this)">Modify</button>
+                <a href="#">Question 1: How much energy does a typical computer consume per hour?</a>
+                <input type="text" value="50 watts" placeholder="Option 1" readonly>
+                <input type="text" value="100 watts" placeholder="Option 2" readonly>
+                <input type="text" value="200 watts" placeholder="Option 3" readonly>
+                <input type="text" value="500 watts" placeholder="Option 4" readonly>
                 <button class="delete-btn" onclick="deleteCategory(this)">Delete</button>
             </li>
         </ul>
     </main>
+    <script>
+        function toggleEdit(checkbox) {
+            const li = checkbox.closest('li');
+            const inputs = li.querySelectorAll('input[type="text"]');
+            inputs.forEach(input => {
+                input.readonly = !checkbox.checked;
+            });
+        }
+    </script>
 </body>
 </html>
