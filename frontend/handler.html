@@ -18,17 +18,49 @@
     <main class="container">
         <h1>All Quizzes</h1>
         <p>View all quizzes, create a new quiz, or return to the homepage.</p>
-        <button class="create-btn" onclick="createQuiz()">Create a Quiz</button>
+        <button class="create-quiz" onclick="createQuiz()">Create a Quiz</button>
         <ul class="quiz-list">
             <li>
-                <p>Question 1: How much energy does a typical computer consume per hour?</p>
-                <input type="text" value="50 watts" placeholder="Option 1" readonly>
-                <input type="text" value="100 watts" placeholder="Option 2" readonly>
-                <input type="text" value="200 watts" placeholder="Option 3" readonly>
-                <input type="text" value="500 watts" placeholder="Option 4" readonly>
-                <button class="delete-btn" onclick="deleteCategory(this)">Delete</button>
+                <p>Quiz 1</p>
+                <ul class="question-list">
+                <button onclick="toggle();">Show questions</button>
+                <div id="questions" hidden>
+                <li>
+                    <p>Question 1: How much energy does a typical computer consume per hour?</p>
+                    <input type="text" value="50 watts" placeholder="Option 1" readonly>
+                    <input type="text" value="100 watts" placeholder="Option 2" readonly>
+                    <input type="text" value="200 watts" placeholder="Option 3" readonly>
+                    <input type="text" value="500 watts" placeholder="Option 4" readonly>
+                    <button class="delete-btn" onclick="deleteCategory(this)">Delete Question</button>
+                </li>
+                <li>
+                    <p>Question 2: How much energy does a typical computer consume per hour?</p>
+                    <input type="text" value="50 watts" placeholder="Option 1" readonly>
+                    <input type="text" value="100 watts" placeholder="Option 2" readonly>
+                    <input type="text" value="200 watts" placeholder="Option 3" readonly>
+                    <input type="text" value="500 watts" placeholder="Option 4" readonly>
+                    <button class="delete-btn" onclick="deleteCategory(this)">Delete Question</button>
+                </li>
+                <button class="create-qst" onclick="createQuestion(this)">Add a Question</button>
+                </div>
             </li>
+            <button class="delete-btn" onclick="deleteCategory(this)">Delete Quiz</button>
         </ul>
     </main>
+    <script>
+        let toggle = () => {
+            let element = document.getElementById("questions");
+            let button = document.querySelector("button[onclick='toggle();']");
+            let hidden = element.getAttribute("hidden");
+
+            if (hidden) {
+                element.removeAttribute("hidden");
+                button.textContent = "Hide questions";
+            } else {
+                element.setAttribute("hidden", "hidden");
+                button.textContent = "Show questions";
+            }
+        }
+    </script>
 </body>
 </html>

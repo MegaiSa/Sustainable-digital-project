@@ -180,3 +180,8 @@ section,
   margin: 16px 0;
   list-style: none;
 }
+
+.quiz-list button {
+  display: block;
+  margin: 16px auto;
+}
