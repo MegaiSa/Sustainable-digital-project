@@ -109,17 +109,10 @@ const registerUser = (username, email, passwordHash, callback) => {
     });
 };
 
-app.put('/api/questions/:id', (req, res) => {
-    const { question_text, correct_answer, options_json } = req.body;
-    const questionId = req.params.id;
-
+const updateQuestion = (id, text, answer, options, callback) => {
     const sql = `UPDATE questions SET question_text = ?, correct_answer = ?, options_json = ? WHERE id = ?`;
-
-    db.run(sql, [question_text, correct_answer, options_json, questionId], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: "Question modifiée !", changes: this.changes });
-    });
-});
+    db.run(sql, [text, answer, options, id], callback);
+};
 
 const updateQuiz = (id, title, description, category, difficulty, callback) => {
     const sql = `UPDATE quizzes SET title = ?, description = ?, category = ?, difficulty = ? WHERE id = ?`;
