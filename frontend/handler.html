@@ -12,7 +12,7 @@
             <li><a href="index.html">Home</a></li>
             <li><a href="quiz.html">Quiz</a></li>
             <li><a href="handler.html">Make a Quiz</a></li>
-            <li><a href="register.html">Register</a></li>
+            <li><a href="register.html" id="nav-auth">Register</a></li>
         </ul>
     </nav>
     <main class="container">
@@ -61,6 +61,103 @@
                 button.textContent = "Show questions";
             }
         }
+        let currentUser = null;
+
+        // 1. Fetch current user session to get ID and Role
+        async function checkSession() {
+            try {
+                const res = await fetch('/api/me');
+                const data = await res.json();
+                if (data.loggedIn) {
+                    currentUser = data;
+                    document.getElementById('nav-auth').textContent = 'My Account';
+                }
+                loadQuizzes(); // Load quizzes after we know who is logged in
+            } catch (err) {
+                console.error("Session check failed");
+            }
+        }
+
+        // 2. Fetch and render quizzes dynamically
+        async function loadQuizzes() {
+            const list = document.getElementById('dynamic-quiz-list');
+            try {
+                const res = await fetch('/api/quizzes');
+                const quizzes = await res.json();
+                
+                list.innerHTML = ''; // Clear loading text
+                
+                quizzes.forEach(quiz => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong>${quiz.title}</strong> (${quiz.difficulty})`;
+                    
+                    // Permission Check: Admin OR the user who created it
+                    if (currentUser && (currentUser.role === 'admin' || currentUser.userId === quiz.user_id)) {
+                        const delBtn = document.createElement('button');
+                        delBtn.className = 'delete-btn';
+                        delBtn.style.marginLeft = '10px';
+                        delBtn.innerText = 'Delete';
+                        delBtn.onclick = () => deleteQuiz(quiz.id);
+                        li.appendChild(delBtn);
+                    }
+                    
+                    list.appendChild(li);
+                });
+            } catch (err) {
+                list.innerHTML = '<li>Error loading quizzes.</li>';
+            }
+        }
+
+        // 3. Create a Quiz logic
+        async function createQuiz() {
+            if (!currentUser) return alert("You must be logged in to create a quiz!");
+            
+            const title = prompt("Enter quiz title:");
+            const difficulty = prompt("Enter difficulty (Easy, Medium, Hard):", "Medium");
+            
+            if (!title || !difficulty) return;
+
+            try {
+                const res = await fetch('/api/quizzes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, difficulty })
+                });
+                
+                if (res.ok) {
+                    alert("Quiz created!");
+                    loadQuizzes(); // Refresh the list
+                } else {
+                    const errorData = await res.json();
+                    alert("Error: " + errorData.error);
+                }
+            } catch (err) {
+                alert("Network error.");
+            }
+        }
+
+        // 4. Delete a Quiz logic
+        async function deleteQuiz(quizId) {
+            if (!confirm("Are you sure you want to delete this quiz?")) return;
+
+            try {
+                const res = await fetch(`/api/quizzes/${quizId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (res.ok) {
+                    loadQuizzes(); // Refresh the list
+                } else {
+                    const errorData = await res.json();
+                    alert("Error: " + errorData.error);
+                }
+            } catch (err) {
+                alert("Network error.");
+            }
+        }
+
+        // Start the process
+        checkSession();
     </script>
 </body>
 </html>

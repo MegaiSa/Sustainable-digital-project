@@ -18,9 +18,9 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false,          // set true if using HTTPS
+        secure: false,
         httpOnly: true,
-        maxAge: 1000 * 60 * 60  // 1 hour
+        maxAge: 1000 * 60 * 60
     }
 }));
 
@@ -35,10 +35,6 @@ function requireAuth(req, res, next) {
 
 // ─── Auth routes ──────────────────────────────────────────────────────────────
 
-/**
- * POST /api/register
- * Body: { nickname, email, password, confirmPassword }
- */
 app.post('/api/register', async (req, res) => {
     const { nickname, email, password, confirmPassword } = req.body;
 
@@ -72,45 +68,41 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-/**
- * POST /api/login
- * Body: { email, password }
- */
+
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password are required.' });
-    }
-
-    const sql = `SELECT id, username, password_hash FROM users WHERE email = ?`;
+    // Add "role" to the SELECT statement
+    const sql = `SELECT id, username, password_hash, role FROM users WHERE email = ?`;
+    
     db.db.get(sql, [email], async (err, user) => {
-        if (err) {
-            console.error('Login DB error:', err);
-            return res.status(500).json({ error: 'Server error.' });
-        }
-        if (!user) {
-            return res.status(401).json({ error: 'Invalid email or password.' });
-        }
+        if (err) return res.status(500).json({ error: 'Server error.' });
+        if (!user) return res.status(401).json({ error: 'Invalid credentials.' });
 
         try {
             const match = await bcrypt.compare(password, user.password_hash);
-            if (!match) {
-                return res.status(401).json({ error: 'Invalid email or password.' });
-            }
+            if (!match) return res.status(401).json({ error: 'Invalid credentials.' });
+            
             req.session.userId = user.id;
             req.session.username = user.username;
-            res.json({ message: 'Logged in!', userId: user.id, username: user.username });
+            req.session.role = user.role; // Save the role in the session
+            res.json({ message: 'Logged in!', userId: user.id });
         } catch (err) {
-            console.error('Bcrypt compare error:', err);
             res.status(500).json({ error: 'Server error.' });
         }
     });
 });
 
-/**
- * POST /api/logout
- */
+app.get('/api/me', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ loggedIn: false });
+    res.json({ 
+        loggedIn: true, 
+        userId: req.session.userId, 
+        username: req.session.username,
+        role: req.session.role // Expose the role to the frontend
+    });
+});
+
+
 app.post('/api/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) return res.status(500).json({ error: 'Could not log out.' });
@@ -119,21 +111,8 @@ app.post('/api/logout', (req, res) => {
     });
 });
 
-/**
- * GET /api/me  — return current session info
- */
-app.get('/api/me', (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).json({ loggedIn: false });
-    }
-    res.json({ loggedIn: true, userId: req.session.userId, username: req.session.username });
-});
-
 // ─── User routes ──────────────────────────────────────────────────────────────
 
-/**
- * GET /api/users  — list all users (id + username only)
- */
 app.get('/api/users', requireAuth, (req, res) => {
     db.getAllUsers((err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -141,9 +120,6 @@ app.get('/api/users', requireAuth, (req, res) => {
     });
 });
 
-/**
- * GET /api/users/:id
- */
 app.get('/api/users/:id', requireAuth, (req, res) => {
     db.getUserById(req.params.id, (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -154,9 +130,18 @@ app.get('/api/users/:id', requireAuth, (req, res) => {
 
 // ─── Quiz routes ──────────────────────────────────────────────────────────────
 
-/**
- * GET /api/quizzes  — list all quizzes
- */
+app.post('/quizzes', async (req, res) => {
+    const { title } = req.body;
+    const userId = req.session.user.id;
+
+    try {
+        await db.query('INSERT INTO quizzes (title, user_id) VALUES (?, ?)', [title, userId]);
+        res.status(201).send('Quiz created successfully');
+    } catch (err) {
+        res.status(500).send('Error creating quiz');
+    }
+});
+
 app.get('/api/quizzes', (req, res) => {
     db.getAllQuizzes((err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -164,10 +149,6 @@ app.get('/api/quizzes', (req, res) => {
     });
 });
 
-/**
- * POST /api/quizzes  — create a new quiz (auth required)
- * Body: { title, difficulty }
- */
 app.post('/api/quizzes', requireAuth, (req, res) => {
     const { title, difficulty } = req.body;
 
@@ -185,16 +166,16 @@ app.post('/api/quizzes', requireAuth, (req, res) => {
     });
 });
 
-/**
- * DELETE /api/quizzes/:id  — delete a quiz (only the author)
- */
 app.delete('/api/quizzes/:id', requireAuth, (req, res) => {
     db.getQuizOwner(req.params.id, (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: 'Quiz not found.' });
-        if (row.author_id !== req.session.userId) {
-            return res.status(403).json({ error: 'You are not the author of this quiz.' });
+        
+        // Ensure the user is either an admin OR the author of the quiz
+        if (req.session.role !== 'admin' && row.user_id !== req.session.userId) {
+            return res.status(403).json({ error: 'Forbidden: You can only delete your own quizzes.' });
         }
+        
         db.deleteQuiz(req.params.id, (err) => {
             if (err) return res.status(500).json({ error: err.message });
             res.json({ message: 'Quiz deleted.' });
@@ -204,9 +185,6 @@ app.delete('/api/quizzes/:id', requireAuth, (req, res) => {
 
 // ─── Question routes ──────────────────────────────────────────────────────────
 
-/**
- * GET /api/quizzes/:id/questions
- */
 app.get('/api/quizzes/:id/questions', (req, res) => {
     db.getQuestionsByQuizId(req.params.id, (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -214,10 +192,6 @@ app.get('/api/quizzes/:id/questions', (req, res) => {
     });
 });
 
-/**
- * POST /api/quizzes/:id/questions  — add a question (author only)
- * Body: { question_text, option_a, option_b, option_c, option_d, correct_answer }
- */
 app.post('/api/quizzes/:id/questions', requireAuth, (req, res) => {
     const { question_text, option_a, option_b, option_c, option_d, correct_answer } = req.body;
 
@@ -248,10 +222,6 @@ app.post('/api/quizzes/:id/questions', requireAuth, (req, res) => {
 
 // ─── Score routes ─────────────────────────────────────────────────────────────
 
-/**
- * POST /api/quizzes/:id/scores  — submit a score
- * Body: { score }
- */
 app.post('/api/quizzes/:id/scores', requireAuth, (req, res) => {
     const { score } = req.body;
     if (score === undefined || score === null) {
@@ -264,9 +234,6 @@ app.post('/api/quizzes/:id/scores', requireAuth, (req, res) => {
     });
 });
 
-/**
- * GET /api/quizzes/:id/leaderboard?limit=10
- */
 app.get('/api/quizzes/:id/leaderboard', (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     db.getLeaderboardByQuiz(req.params.id, limit, (err, rows) => {
@@ -277,9 +244,6 @@ app.get('/api/quizzes/:id/leaderboard', (req, res) => {
 
 // ─── Global leaderboard (across all quizzes) ──────────────────────────────────
 
-/**
- * GET /api/leaderboard?limit=10
- */
 app.get('/api/leaderboard', (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const sql = `

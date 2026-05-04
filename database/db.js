@@ -25,11 +25,18 @@ function initDatabase() {
 }
 
 // Create a new quiz
-// FIX: schema column is `author_id`, not `user_id`
 const createQuiz = (title, difficulty, userId, callback) => {
-    const sql = `INSERT INTO quizzes (title, difficulty, author_id) VALUES (?, ?, ?)`;
+    const sql = `INSERT INTO quizzes (title, difficulty, user_id) VALUES (?, ?, ?)`;
     db.run(sql, [title, difficulty, userId], function(err) {
         callback(err, this.lastID);
+    });
+};
+
+// Get the owner of a quiz
+const getQuizOwner = (quizId, callback) => {
+    const sql = `SELECT user_id FROM quizzes WHERE id = ?`;
+    db.get(sql, [quizId], (err, row) => {
+        callback(err, row);
     });
 };
 
@@ -94,13 +101,6 @@ const saveUserScore = (userId, quizId, score, callback) => {
     });
 };
 
-const getQuizOwner = (quizId, callback) => {
-    const sql = `SELECT author_id FROM quizzes WHERE id = ?`;
-    db.get(sql, [quizId], (err, row) => {
-        callback(err, row);
-    });
-};
-
 // Create a new user (Sign-up)
 const registerUser = (username, email, passwordHash, callback) => {
     const sql = `INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)`;
@@ -108,18 +108,6 @@ const registerUser = (username, email, passwordHash, callback) => {
         callback(err, this.lastID);
     });
 };
-
-app.put('/api/questions/:id', (req, res) => {
-    const { question_text, correct_answer, options_json } = req.body;
-    const questionId = req.params.id;
-
-    const sql = `UPDATE questions SET question_text = ?, correct_answer = ?, options_json = ? WHERE id = ?`;
-
-    db.run(sql, [question_text, correct_answer, options_json, questionId], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: "Question modifiée !", changes: this.changes });
-    });
-});
 
 const updateQuiz = (id, title, description, category, difficulty, callback) => {
     const sql = `UPDATE quizzes SET title = ?, description = ?, category = ?, difficulty = ? WHERE id = ?`;
