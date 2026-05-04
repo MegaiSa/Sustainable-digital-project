@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register — Sustainable Digital Project</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        .msg { margin-top: 12px; font-weight: 600; font-size: 0.9rem; }
-        .msg.error { color: #c0392b; }
-        .msg.success { color: #214d3e; }
-    </style>
 </head>
 <body>
     <nav>
@@ -20,6 +15,7 @@
             <li><a href="register.html">Register</a></li>
         </ul>
     </nav>
+    <p>Welcome, <span id="user-name"></span>!</p>
     <div class="container">
         <section id="register">
             <h1>Create your account</h1>
@@ -63,6 +59,16 @@
     </div>
 
     <script>
+        async function checkSession() {
+            try {
+                const res = await fetch('/api/me');
+                const data = await res.json();
+                    if (data.loggedIn) {
+                        document.getElementById('user-name').textContent = data.username;
+                    }
+            } catch (_) {}
+        }
+
         async function handleRegister() {
             const msg = document.getElementById('register-msg');
             msg.textContent = '';

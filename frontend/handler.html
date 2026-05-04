@@ -15,6 +15,7 @@
             <li><a href="register.html" id="nav-auth">Register</a></li>
         </ul>
     </nav>
+    <p>Welcome, <span id="user-name"></span>!</p>
     <main class="container">
         <h1>All Quizzes</h1>
         <p>View all quizzes, create a new quiz, or return to the homepage.</p>
@@ -70,7 +71,7 @@
                 const data = await res.json();
                 if (data.loggedIn) {
                     currentUser = data;
-                    document.getElementById('nav-auth').textContent = 'My Account';
+                    document.getElementById('user-name').textContent = currentUser.username;
                 }
                 loadQuizzes(); // Load quizzes after we know who is logged in
             } catch (err) {
@@ -155,7 +156,7 @@
                 alert("Network error.");
             }
         }
-
+        
         // Start the process
         checkSession();
     </script>
