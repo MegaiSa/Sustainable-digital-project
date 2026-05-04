@@ -40,7 +40,7 @@
                 const authLink = document.getElementById('nav-auth');
                 if (data.loggedIn) {
                     currentUser = data;
-                    document.getElementById('nav-auth').textContent = 'My Account';
+                    document.getElementById('nav-auth').style.display = 'none';
                     document.getElementById('user-name').textContent = data.username;
                     document.getElementById('nav-logout').style.display = '';
                 }

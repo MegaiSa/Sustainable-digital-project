@@ -69,6 +69,7 @@
                     if (data.loggedIn) {
                         document.getElementById('user-name').textContent = data.username;
                         document.getElementById('nav-logout').style.display = '';
+                        document.getElementById('nav-auth').style.display = 'none';
                     }
             } catch (_) {}
         }
