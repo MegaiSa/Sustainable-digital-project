@@ -124,5 +124,6 @@ module.exports = {
     saveUserScore,
     getLeaderboardByQuiz,
     createQuiz,
-    deleteQuiz
+    deleteQuiz,
+    registerUser
 };
