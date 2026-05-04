@@ -18,7 +18,7 @@
             </li>
         </ul>
     </nav>
-
+    <p>Welcome, <span id="user-name"></span>!</p>
     <main>
         <h1>Welcome to the Sustainable Digital Project</h1>
         <p id="welcome-msg">This is a quiz about multiple subjects, testing your knowledge while being environmentally conscious.</p>
@@ -42,9 +42,9 @@
                 if (data.loggedIn) {
                     document.getElementById('welcome-msg').textContent =
                         `Welcome back, ${data.username}! Ready to quiz?`;
-                    document.getElementById('nav-auth').textContent = 'My Account';
-                    document.getElementById('nav-auth').href = 'register.html';
+                    document.getElementById('user-name').textContent = data.username;
                     document.getElementById('nav-logout').style.display = '';
+                    document.getElementById('nav-auth').style.display = 'none';
                 }
             } catch (_) {}
         }

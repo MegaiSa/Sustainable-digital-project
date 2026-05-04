@@ -147,9 +147,8 @@ app.post('/api/quizzes/:id/questions', requireAuth, (req, res) => {
     db.getQuizOwner(req.params.id, (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: 'Quiz not found.' });
-        
-        if (row.user_id !== req.session.userId && req.session.role !== 'admin') {
-            return res.status(403).json({ error: 'Only the author or admin can add questions.' });
+        if (row.user_id !== req.session.userId) {
+            return res.status(403).json({ error: 'Only the author can add questions.' });
         }
 
         const sql = `INSERT INTO questions (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_answer) VALUES (?, ?, ?, ?, ?, ?, ?)`;
