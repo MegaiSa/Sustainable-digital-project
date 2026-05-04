@@ -101,12 +101,37 @@ const saveUserScore = (userId, quizId, score, callback) => {
     });
 };
 
+<<<<<<< HEAD
+=======
+const getQuizOwner = (quizId, callback) => {
+    const sql = `SELECT author_id FROM quizzes WHERE id = ?`;
+    db.get(sql, [quizId], (err, row) => {
+        callback(err, row);
+    });
+};
+
+>>>>>>> bb70a137e05cf74486bbd7d67757ff4b42a80291
 // Create a new user (Sign-up)
 const registerUser = (username, email, passwordHash, callback) => {
     const sql = `INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)`;
     db.run(sql, [username, email, passwordHash], function(err) {
         callback(err, this.lastID);
     });
+};
+
+const updateQuiz = (id, title, description, category, difficulty, callback) => {
+    const sql = `UPDATE quizzes SET title = ?, description = ?, category = ?, difficulty = ? WHERE id = ?`;
+    db.run(sql, [title, description, category, difficulty, id], callback);
+};
+
+const updateQuestion = (id, text, answer, options, callback) => {
+    const sql = `UPDATE questions SET question_text = ?, correct_answer = ?, options_json = ? WHERE id = ?`;
+    db.run(sql, [text, answer, options, id], callback);
+};
+
+const deleteQuestion = (id, callback) => {
+    const sql = `DELETE FROM questions WHERE id = ?`;
+    db.run(sql, [id], callback);
 };
 
 module.exports = {
@@ -120,5 +145,8 @@ module.exports = {
     getLeaderboardByQuiz,
     createQuiz,
     deleteQuiz,
-    registerUser
+    registerUser,
+    updateQuiz,
+    updateQuestion,
+    deleteQuestion
 };
