@@ -109,11 +109,6 @@ const registerUser = (username, email, passwordHash, callback) => {
     });
 };
 
-const updateQuestion = (id, text, answer, options, callback) => {
-    const sql = `UPDATE questions SET question_text = ?, correct_answer = ?, options_json = ? WHERE id = ?`;
-    db.run(sql, [text, answer, options, id], callback);
-};
-
 const updateQuiz = (id, title, description, category, difficulty, callback) => {
     const sql = `UPDATE quizzes SET title = ?, description = ?, category = ?, difficulty = ? WHERE id = ?`;
     db.run(sql, [title, description, category, difficulty, id], callback);
