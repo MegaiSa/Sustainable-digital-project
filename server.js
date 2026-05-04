@@ -68,37 +68,40 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
+
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password are required.' });
-    }
-
-    const sql = `SELECT id, username, password_hash FROM users WHERE email = ?`;
+    // Add "role" to the SELECT statement
+    const sql = `SELECT id, username, password_hash, role FROM users WHERE email = ?`;
+    
     db.db.get(sql, [email], async (err, user) => {
-        if (err) {
-            console.error('Login DB error:', err);
-            return res.status(500).json({ error: 'Server error.' });
-        }
-        if (!user) {
-            return res.status(401).json({ error: 'Invalid email or password.' });
-        }
+        if (err) return res.status(500).json({ error: 'Server error.' });
+        if (!user) return res.status(401).json({ error: 'Invalid credentials.' });
 
         try {
             const match = await bcrypt.compare(password, user.password_hash);
-            if (!match) {
-                return res.status(401).json({ error: 'Invalid email or password.' });
-            }
+            if (!match) return res.status(401).json({ error: 'Invalid credentials.' });
+            
             req.session.userId = user.id;
             req.session.username = user.username;
-            res.json({ message: 'Logged in!', userId: user.id, username: user.username });
+            req.session.role = user.role; // Save the role in the session
+            res.json({ message: 'Logged in!', userId: user.id });
         } catch (err) {
-            console.error('Bcrypt compare error:', err);
             res.status(500).json({ error: 'Server error.' });
         }
     });
 });
+
+app.get('/api/me', (req, res) => {
+    if (!req.session.userId) return res.status(401).json({ loggedIn: false });
+    res.json({ 
+        loggedIn: true, 
+        userId: req.session.userId, 
+        username: req.session.username,
+        role: req.session.role // Expose the role to the frontend
+    });
+});
+
 
 app.post('/api/logout', (req, res) => {
     req.session.destroy((err) => {
@@ -106,13 +109,6 @@ app.post('/api/logout', (req, res) => {
         res.clearCookie('connect.sid');
         res.json({ message: 'Logged out successfully.' });
     });
-});
-
-app.get('/api/me', (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).json({ loggedIn: false });
-    }
-    res.json({ loggedIn: true, userId: req.session.userId, username: req.session.username });
 });
 
 // ─── User routes ──────────────────────────────────────────────────────────────
@@ -174,42 +170,17 @@ app.delete('/api/quizzes/:id', requireAuth, (req, res) => {
     db.getQuizOwner(req.params.id, (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: 'Quiz not found.' });
-        if (row.author_id !== req.session.userId) {
-            return res.status(403).json({ error: 'You are not the author of this quiz.' });
+        
+        // Ensure the user is either an admin OR the author of the quiz
+        if (req.session.role !== 'admin' && row.user_id !== req.session.userId) {
+            return res.status(403).json({ error: 'Forbidden: You can only delete your own quizzes.' });
         }
+        
         db.deleteQuiz(req.params.id, (err) => {
             if (err) return res.status(500).json({ error: err.message });
             res.json({ message: 'Quiz deleted.' });
         });
     });
-});
-
-app.delete('/quizzes/:id', async (req, res) => {
-    const quizId = req.params.id;
-    const currentUser = req.session.user; // Get logged-in user
-
-    if (!currentUser) {
-        return res.status(401).send('You must be logged in.');
-    }
-
-    try {
-        if (currentUser.role === 'admin') {
-            // ADMIN: Can delete any quiz, no questions asked
-            await db.query('DELETE FROM quizzes WHERE id = ?', [quizId]);
-            return res.send('Quiz deleted by admin.');
-        } else {
-            // NORMAL USER: Can only delete if their ID matches the quiz's user_id
-            const result = await db.query('DELETE FROM quizzes WHERE id = ? AND user_id = ?', [quizId, currentUser.id]);
-            
-            // Check if a row was actually deleted
-            if (result.affectedRows === 0) {
-                return res.status(403).send('Forbidden: You can only delete your own quizzes.');
-            }
-            return res.send('Quiz deleted successfully.');
-        }
-    } catch (err) {
-        res.status(500).send('Database error');
-    }
 });
 
 // ─── Question routes ──────────────────────────────────────────────────────────

@@ -25,11 +25,18 @@ function initDatabase() {
 }
 
 // Create a new quiz
-// FIX: schema column is `author_id`, not `user_id`
 const createQuiz = (title, difficulty, userId, callback) => {
-    const sql = `INSERT INTO quizzes (title, difficulty, author_id) VALUES (?, ?, ?)`;
+    const sql = `INSERT INTO quizzes (title, difficulty, user_id) VALUES (?, ?, ?)`;
     db.run(sql, [title, difficulty, userId], function(err) {
         callback(err, this.lastID);
+    });
+};
+
+// Get the owner of a quiz
+const getQuizOwner = (quizId, callback) => {
+    const sql = `SELECT user_id FROM quizzes WHERE id = ?`;
+    db.get(sql, [quizId], (err, row) => {
+        callback(err, row);
     });
 };
 
@@ -91,14 +98,6 @@ const saveUserScore = (userId, quizId, score, callback) => {
     const sql = `INSERT INTO scores (user_id, quiz_id, score, completed_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)`;
     db.run(sql, [userId, quizId, score], function(err) {
         callback(err, this.lastID);
-    });
-};
-
-// FIX: was selecting `author_id` correctly — no change needed here
-const getQuizOwner = (quizId, callback) => {
-    const sql = `SELECT author_id FROM quizzes WHERE id = ?`;
-    db.get(sql, [quizId], (err, row) => {
-        callback(err, row);
     });
 };
 
