@@ -106,6 +106,13 @@ const getQuizOwner = (quizId, callback) => {
     });
 };
 
+// Create a new user (Sign-up)
+const registerUser = (username, email, passwordHash, callback) => {
+    const sql = `INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)`;
+    db.run(sql, [username, email, passwordHash], function(err) {
+        callback(err, this.lastID);
+    });
+};
 
 module.exports = {
     db,
