@@ -11,31 +11,82 @@
         <ul>
             <li><a href="index.html">Home</a></li>
             <li><a href="quiz.html">Quiz</a></li>
-            <li><a href="register.html">Register</a></li>
+            <li><a href="register.html" id="nav-auth">Register</a></li>
+            <li id="nav-logout" style="display:none;">
+                <a href="#" onclick="logout()">Log out</a>
+            </li>
         </ul>
     </nav>
+
     <main>
         <h1>Welcome to the Sustainable Digital Project</h1>
-        <p>This is quiz about multiple subject, that will test your knowledge while being environmentally conscious.</p>
+        <p id="welcome-msg">This is a quiz about multiple subjects, testing your knowledge while being environmentally conscious.</p>
     </main>
+
     <section id="leaderboard">
-        <h2>Leaderboard</h2>
+        <h2>🏆 Global Leaderboard</h2>
         <p>Top quiz performers:</p>
-        <ol>
-            <li>Alice — 95 points</li>
-            <li>Jordan — 88 points</li>
-            <li>Morgan — 84 points</li>
+        <ol id="leaderboard-list">
+            <li>Loading…</li>
         </ol>
     </section>
+
     <section id="categories">
         <h2>Categories</h2>
         <p>Explore quiz categories to find the topics you want to test your knowledge on.</p>
         <ul>
-            <li>animals</li>
-            <li>plants</li>
-            <li>p actors</li>
-            <li>logos</li>
+            <li>Animals</li>
+            <li>Plants</li>
+            <li>Pop Actors</li>
+            <li>Logos</li>
         </ul>
     </section>
+
+    <script>
+        // ── Check session ─────────────────────────────────────────────────
+
+        async function checkSession() {
+            try {
+                const res = await fetch('/api/me');
+                const data = await res.json();
+                if (data.loggedIn) {
+                    document.getElementById('welcome-msg').textContent =
+                        `Welcome back, ${data.username}! Ready to quiz?`;
+                    document.getElementById('nav-auth').textContent = 'My Account';
+                    document.getElementById('nav-auth').href = 'register.html';
+                    document.getElementById('nav-logout').style.display = '';
+                }
+            } catch (_) {}
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.reload();
+        }
+
+        // ── Load global leaderboard ────────────────────────────────────────
+
+        async function loadLeaderboard() {
+            try {
+                const res = await fetch('/api/leaderboard?limit=5');
+                const rows = await res.json();
+                const ol = document.getElementById('leaderboard-list');
+
+                if (!rows.length) {
+                    ol.innerHTML = '<li>No scores yet. Be the first!</li>';
+                    return;
+                }
+
+                ol.innerHTML = rows.map(r =>
+                    `<li>${r.username} — ${r.total_score} pts (${r.quizzes_taken} quiz${r.quizzes_taken > 1 ? 'zes' : ''})</li>`
+                ).join('');
+            } catch (_) {
+                document.getElementById('leaderboard-list').innerHTML = '<li>Leaderboard unavailable.</li>';
+            }
+        }
+
+        checkSession();
+        loadLeaderboard();
+    </script>
 </body>
 </html>

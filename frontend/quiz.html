@@ -3,8 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sustainable Digital Project</title>
+    <title>Quiz — Sustainable Digital Project</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        #quiz-picker { width: min(100%, 760px); margin: 0 auto 24px; }
+        #quiz-picker select {
+            padding: 10px 14px;
+            border: 2px solid var(--accent);
+            border-radius: 14px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 1rem;
+            width: 100%;
+            margin: 12px 0;
+        }
+        #quiz-picker button, #quiz button {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 14px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s;
+        }
+        #quiz-picker button:hover, #quiz button:hover { background: var(--accent-soft); }
+        #result {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        #quiz #options li { cursor: pointer; }
+        #quiz #options li.correct { background: #d4f0dc; border-color: #3b6d11; }
+        #quiz #options li.wrong { background: #fce4e4; border-color: #c0392b; }
+    </style>
 </head>
 <body>
     <nav>
@@ -14,15 +49,147 @@
             <li><a href="register.html">Register</a></li>
         </ul>
     </nav>
-    <section id="quiz">
-        <p>Question 1</p>
-        <p>What is the capital of France?</p>
-        <ul id="options">
-            <li>Irelande du nord</li>
-            <li>Osseti du sud Alanie</li>
-            <li>Haut Karabh</li>
-            <li>Paris?</li>
-        </ul>
+
+    <!-- Quiz selector -->
+    <section id="quiz-picker">
+        <h2>Choose a Quiz</h2>
+        <select id="quiz-select">
+            <option value="">Loading quizzes…</option>
+        </select>
+        <button onclick="startQuiz()">Start</button>
     </section>
+
+    <!-- Quiz question area -->
+    <section id="quiz" style="display:none;">
+        <p id="question-counter">Question 1 / ?</p>
+        <p id="question-text"></p>
+        <ul id="options"></ul>
+        <div id="result"></div>
+        <button id="next-btn" style="display:none;" onclick="nextQuestion()">Next →</button>
+        <button id="finish-btn" style="display:none;" onclick="finishQuiz()">Finish &amp; Submit Score</button>
+    </section>
+
+    <script>
+        let quizzes = [];
+        let questions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let answered = false;
+        let currentQuizId = null;
+
+        // ── Load quiz list ──────────────────────────────────────────────────
+
+        async function loadQuizzes() {
+            const res = await fetch('/api/quizzes');
+            quizzes = await res.json();
+            const sel = document.getElementById('quiz-select');
+            sel.innerHTML = quizzes.length
+                ? quizzes.map(q => `<option value="${q.id}">${q.title} (${q.difficulty})</option>`).join('')
+                : '<option value="">No quizzes available</option>';
+        }
+
+        // ── Start quiz ─────────────────────────────────────────────────────
+
+        async function startQuiz() {
+            const quizId = document.getElementById('quiz-select').value;
+            if (!quizId) return alert('Please select a quiz.');
+            currentQuizId = quizId;
+
+            const res = await fetch(`/api/quizzes/${quizId}/questions`);
+            questions = await res.json();
+
+            if (!questions.length) return alert('This quiz has no questions yet.');
+
+            currentIndex = 0;
+            score = 0;
+
+            document.getElementById('quiz-picker').style.display = 'none';
+            document.getElementById('quiz').style.display = '';
+            renderQuestion();
+        }
+
+        // ── Render current question ────────────────────────────────────────
+
+        function renderQuestion() {
+            answered = false;
+            const q = questions[currentIndex];
+            document.getElementById('question-counter').textContent =
+                `Question ${currentIndex + 1} / ${questions.length}`;
+            document.getElementById('question-text').textContent = q.question_text;
+            document.getElementById('result').textContent = '';
+
+            const opts = [
+                { letter: 'A', text: q.option_a },
+                { letter: 'B', text: q.option_b },
+                { letter: 'C', text: q.option_c },
+                { letter: 'D', text: q.option_d },
+            ];
+
+            const ul = document.getElementById('options');
+            ul.innerHTML = opts.map(o =>
+                `<li onclick="checkAnswer(this, '${o.letter}', '${q.correct_answer}')">${o.text}</li>`
+            ).join('');
+
+            document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('finish-btn').style.display = 'none';
+        }
+
+        // ── Check answer ───────────────────────────────────────────────────
+
+        function checkAnswer(el, chosen, correct) {
+            if (answered) return;
+            answered = true;
+
+            const items = document.querySelectorAll('#options li');
+            const letters = ['A', 'B', 'C', 'D'];
+            items.forEach((li, i) => {
+                li.style.pointerEvents = 'none';
+                if (letters[i] === correct) li.classList.add('correct');
+            });
+
+            if (chosen === correct) {
+                score += 10;
+                document.getElementById('result').textContent = '✅ Correct! +10 pts';
+            } else {
+                el.classList.add('wrong');
+                document.getElementById('result').textContent = `❌ Wrong. Correct answer: ${correct}`;
+            }
+
+            const isLast = currentIndex === questions.length - 1;
+            document.getElementById('next-btn').style.display = isLast ? 'none' : 'inline-block';
+            document.getElementById('finish-btn').style.display = isLast ? 'inline-block' : 'none';
+        }
+
+        // ── Next question ──────────────────────────────────────────────────
+
+        function nextQuestion() {
+            currentIndex++;
+            renderQuestion();
+        }
+
+        // ── Submit score ───────────────────────────────────────────────────
+
+        async function finishQuiz() {
+            const section = document.getElementById('quiz');
+            section.querySelector('#options').innerHTML = '';
+            section.querySelector('#question-text').textContent = '';
+            section.querySelector('#question-counter').textContent = 'Quiz complete!';
+            document.getElementById('next-btn').style.display = 'none';
+            document.getElementById('finish-btn').style.display = 'none';
+            document.getElementById('result').textContent = `🎉 Your score: ${score} / ${questions.length * 10}`;
+
+            // Try to submit score (silently skip if not logged in)
+            try {
+                await fetch(`/api/quizzes/${currentQuizId}/scores`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ score }),
+                });
+            } catch (_) {}
+        }
+
+        // ── Init ───────────────────────────────────────────────────────────
+        loadQuizzes();
+    </script>
 </body>
 </html>
