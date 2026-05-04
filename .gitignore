@@ -148,3 +148,7 @@ vite.config.ts.timestamp-*
 *.db-journal
 *.db-shm
 *.db-wal
+
+
+
+.DS_Store
