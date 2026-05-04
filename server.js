@@ -160,9 +160,23 @@ app.post('/api/quizzes/:id/questions', requireAuth, (req, res) => {
 });
 
 app.delete('/api/questions/:id', requireAuth, (req, res) => {
-    db.deleteQuestion(req.params.id, (err) => {
+    // Security check: Find out who owns the quiz that this question belongs to
+    const sql = `SELECT quizzes.user_id FROM questions JOIN quizzes ON questions.quiz_id = quizzes.id WHERE questions.id = ?`;
+    
+    db.db.get(sql, [req.params.id], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: 'Question deleted.' });
+        if (!row) return res.status(404).json({ error: 'Question not found.' });
+        
+        // Block if the user is not the owner AND not an admin
+        if (row.user_id !== req.session.userId && req.session.role !== 'admin') {
+            return res.status(403).json({ error: 'Forbidden: You cannot delete this question.' });
+        }
+
+        // If we pass the check, delete it safely
+        db.deleteQuestion(req.params.id, (err) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ message: 'Question deleted.' });
+        });
     });
 });
 

@@ -91,32 +91,31 @@
                     questions.forEach((q, index) => {
                         const qLi = document.createElement('li');
                         
-                        // We remove 'readonly' and add specific class names to grab the values later
+                        const readOnlyAttr = hasAccess ? '' : 'readonly';
+                        
                         qLi.innerHTML = `
                             <p style="margin-top: 15px;"><strong>Question ${index + 1}:</strong></p>
-                            <input type="text" class="edit-text" value="${q.question_text}" style="margin-bottom: 10px;">
+                            <input type="text" class="edit-text" value="${q.question_text}" style="margin-bottom: 10px;" ${readOnlyAttr}>
                             
-                            <label>Option A:</label> <input type="text" class="edit-opt-a" value="${q.option_a}">
-                            <label>Option B:</label> <input type="text" class="edit-opt-b" value="${q.option_b}">
-                            <label>Option C:</label> <input type="text" class="edit-opt-c" value="${q.option_c}">
-                            <label>Option D:</label> <input type="text" class="edit-opt-d" value="${q.option_d}">
+                            <label>Option A:</label> <input type="text" class="edit-opt-a" value="${q.option_a}" ${readOnlyAttr}>
+                            <label>Option B:</label> <input type="text" class="edit-opt-b" value="${q.option_b}" ${readOnlyAttr}>
+                            <label>Option C:</label> <input type="text" class="edit-opt-c" value="${q.option_c}" ${readOnlyAttr}>
+                            <label>Option D:</label> <input type="text" class="edit-opt-d" value="${q.option_d}" ${readOnlyAttr}>
                             
                             <p style="font-size: 0.9rem; color: var(--accent); font-weight: bold;">
                                 Correct Answer (A, B, C, D): 
-                                <input type="text" class="edit-correct" value="${q.correct_answer}" style="width: 50px; text-align: center; display: inline-block;">
+                                <input type="text" class="edit-correct" value="${q.correct_answer}" style="width: 50px; text-align: center; display: inline-block;" ${readOnlyAttr}>
                             </p>
                         `;
 
                         if (hasAccess) {
-                            // The new SAVE button
                             const saveQstBtn = document.createElement('button');
-                            saveQstBtn.className = 'create-qst'; // Reusing your green button style
+                            saveQstBtn.className = 'create-qst'; 
                             saveQstBtn.style.marginRight = '10px';
                             saveQstBtn.textContent = 'Save Changes';
                             saveQstBtn.onclick = () => saveQuestionChanges(q.id, qLi);
                             qLi.appendChild(saveQstBtn);
 
-                            // The existing DELETE button
                             const delQstBtn = document.createElement('button');
                             delQstBtn.className = 'delete-btn';
                             delQstBtn.textContent = 'Delete Question';
