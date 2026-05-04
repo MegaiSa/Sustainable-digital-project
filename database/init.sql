@@ -70,3 +70,14 @@ VALUES ('Digital Sustainability', 'Test your knowledge on IT impact.', 'Easy', 1
 
 INSERT INTO questions (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_answer)
 VALUES (1, 'Which image format is most eco-friendly?', 'PNG', 'JPEG', 'WebP', 'BMP', 'C');
+
+
+CREATE TRIGGER IF NOT EXISTS limit_user_quizzes
+BEFORE INSERT ON quizzes
+FOR EACH ROW
+BEGIN
+    SELECT CASE
+        WHEN (SELECT COUNT(*) FROM quizzes WHERE author_id = NEW.author_id) >= 5
+        THEN RAISE(ABORT, 'Quiz limit reached. Please delete an existing quiz before creating a new one.')
+    END;
+END;

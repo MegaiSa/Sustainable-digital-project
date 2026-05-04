@@ -124,6 +124,7 @@ const deleteQuestion = (id, callback) => {
     db.run(sql, [id], callback);
 };
 
+
 module.exports = {
     db,
     getAllUsers,
@@ -139,4 +140,4 @@ module.exports = {
     updateQuiz,
     updateQuestion,
     deleteQuestion
-};
+};  
