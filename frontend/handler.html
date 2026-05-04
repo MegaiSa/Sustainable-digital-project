@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Handler</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="quiz.html">Quiz</a></li>
+            <li><a href="handler.html">Make a Quiz</a></li>
+            <li><a href="register.html">Register</a></li>
+        </ul>
+    </nav>
+    <main class="container">
+        <h1>All Quizzes</h1>
+        <p>View all quizzes, create a new quiz, or return to the homepage.</p>
+        <button class="create-btn" onclick="createQuiz()">Create a Quiz</button>
+        <ul class="quiz-list">
+            <li>
+                <a href="#">Quiz 1: Sustainable Systems</a>
+                <button class="modify-btn" onclick="modifyQuiz(this)">Modify</button>
+                <button class="delete-btn" onclick="deleteCategory(this)">Delete</button>
+            </li>
+            <li>
+                <a href="#">Quiz 2: Digital Sustainability</a>
+                <button class="modify-btn" onclick="modifyQuiz(this)">Modify</button>
+                <button class="delete-btn" onclick="deleteCategory(this)">Delete</button>
+            </li>
+            <li>
+                <a href="#">Quiz 3: Graph Theory Basics</a>
+                <button class="modify-btn" onclick="modifyQuiz(this)">Modify</button>
+                <button class="delete-btn" onclick="deleteCategory(this)">Delete</button>
+            </li>
+        </ul>
+    </main>
+</body>
+</html>
