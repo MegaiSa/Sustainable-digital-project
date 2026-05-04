@@ -21,7 +21,7 @@
         <button class="create-btn" onclick="createQuiz()">Create a Quiz</button>
         <ul class="quiz-list">
             <li>
-                <a href="#">Question 1: How much energy does a typical computer consume per hour?</a>
+                <p>Question 1: How much energy does a typical computer consume per hour?</p>
                 <input type="text" value="50 watts" placeholder="Option 1" readonly>
                 <input type="text" value="100 watts" placeholder="Option 2" readonly>
                 <input type="text" value="200 watts" placeholder="Option 3" readonly>
@@ -30,14 +30,5 @@
             </li>
         </ul>
     </main>
-    <script>
-        function toggleEdit(checkbox) {
-            const li = checkbox.closest('li');
-            const inputs = li.querySelectorAll('input[type="text"]');
-            inputs.forEach(input => {
-                input.readonly = !checkbox.checked;
-            });
-        }
-    </script>
 </body>
 </html>
