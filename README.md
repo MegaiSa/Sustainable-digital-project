@@ -5,7 +5,7 @@ The **Sustainable Digital Project** is a lightweight, eco-conscious web applicat
 
 ## 2. Deployed Site
 You can access the live version of the project here:  
-**[👉 Click here to view the Deployed Site](https://sustainabledigital.vendredicorp.fr/)**
+**[Click here to view the Deployed Site](https://sustainabledigital.vendredicorp.fr/)**
 
 ## 3. Team Members and Roles
 | Name | Role | Responsibilities |
@@ -69,4 +69,4 @@ project-root/
 ```
 
 ## 7. Project Report
-[Click here to read the Final Technical Report (PDF)](./docs/Report_TI616_TeamX.pdf)
+[Click here to read the Final Technical Report (PDF)](./docs/Report.pdf)
