@@ -94,7 +94,6 @@ const saveUserScore = (userId, quizId, score, callback) => {
     });
 };
 
-// FIX: was selecting `author_id` correctly — no change needed here
 const getQuizOwner = (quizId, callback) => {
     const sql = `SELECT author_id FROM quizzes WHERE id = ?`;
     db.get(sql, [quizId], (err, row) => {
@@ -110,6 +109,33 @@ const registerUser = (username, email, passwordHash, callback) => {
     });
 };
 
+app.put('/api/questions/:id', (req, res) => {
+    const { question_text, correct_answer, options_json } = req.body;
+    const questionId = req.params.id;
+
+    const sql = `UPDATE questions SET question_text = ?, correct_answer = ?, options_json = ? WHERE id = ?`;
+
+    db.run(sql, [question_text, correct_answer, options_json, questionId], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: "Question modifiée !", changes: this.changes });
+    });
+});
+
+const updateQuiz = (id, title, description, category, difficulty, callback) => {
+    const sql = `UPDATE quizzes SET title = ?, description = ?, category = ?, difficulty = ? WHERE id = ?`;
+    db.run(sql, [title, description, category, difficulty, id], callback);
+};
+
+const updateQuestion = (id, text, answer, options, callback) => {
+    const sql = `UPDATE questions SET question_text = ?, correct_answer = ?, options_json = ? WHERE id = ?`;
+    db.run(sql, [text, answer, options, id], callback);
+};
+
+const deleteQuestion = (id, callback) => {
+    const sql = `DELETE FROM questions WHERE id = ?`;
+    db.run(sql, [id], callback);
+};
+
 module.exports = {
     db,
     getAllUsers,
@@ -121,5 +147,8 @@ module.exports = {
     getLeaderboardByQuiz,
     createQuiz,
     deleteQuiz,
-    registerUser
+    registerUser,
+    updateQuiz,
+    updateQuestion,
+    deleteQuestion
 };
