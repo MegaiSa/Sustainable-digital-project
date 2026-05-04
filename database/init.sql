@@ -14,7 +14,7 @@ CREATE TABLE users (
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    role TEXT DEFAULT 'user'
+    role VARCHAR(50) DEFAULT 'user'
 );
 
 -- 2. QUIZZES TABLE 
@@ -24,9 +24,9 @@ CREATE TABLE quizzes (
     description TEXT,
     category TEXT DEFAULT 'General',
     difficulty TEXT CHECK(difficulty IN ('Easy', 'Medium', 'Hard')) DEFAULT 'Medium',
-    author_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- 3. QUESTIONS TABLE
@@ -38,7 +38,7 @@ CREATE TABLE questions (
     option_b TEXT NOT NULL,
     option_c TEXT NOT NULL,
     option_d TEXT NOT NULL,
-    correct_answer CHAR(1) NOT NULL, -- Format 'A', 'B', 'C', ou 'D'
+    correct_answer CHAR(1) NOT NULL,
     FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
 );
 
@@ -54,7 +54,7 @@ CREATE TABLE scores (
 );
 
 -- 5. PERFORMANCE INDEXES (Green IT Optimization)
-CREATE INDEX idx_quiz_author ON quizzes(author_id);
+CREATE INDEX idx_quiz_user ON quizzes(user_id);
 CREATE INDEX idx_questions_quiz ON questions(quiz_id);
 CREATE INDEX idx_quiz_category ON quizzes(category);
 CREATE INDEX idx_scores_user ON scores(user_id);
@@ -64,7 +64,7 @@ CREATE INDEX idx_scores_quiz ON scores(quiz_id);
 INSERT INTO users (username, email, password_hash, role) 
 VALUES ('EcoUser', 'test@efrei.fr', 'hashed_password_here', 'admin');
 
-INSERT INTO quizzes (title, description, difficulty, author_id) 
+INSERT INTO quizzes (title, description, difficulty, user_id) 
 VALUES ('Digital Sustainability', 'Test your knowledge on IT impact.', 'Easy', 1);
 
 INSERT INTO questions (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_answer)

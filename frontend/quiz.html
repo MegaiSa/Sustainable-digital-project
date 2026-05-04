@@ -50,7 +50,6 @@
         </ul>
     </nav>
 
-    <!-- Quiz selector -->
     <section id="quiz-picker">
         <h2>Choose a Quiz</h2>
         <select id="quiz-select">
@@ -59,7 +58,6 @@
         <button onclick="startQuiz()">Start</button>
     </section>
 
-    <!-- Quiz question area -->
     <section id="quiz" style="display:none;">
         <p id="question-counter">Question 1 / ?</p>
         <p id="question-text"></p>
@@ -133,7 +131,22 @@
             document.getElementById('next-btn').style.display = 'none';
             document.getElementById('finish-btn').style.display = 'none';
         }
-
+        
+        function renderQuiz(quiz, loggedInUser) {
+            const quizElement = document.createElement('div');
+            quizElement.innerHTML = `<h3>${quiz.title}</h3>`;
+        
+            const isAdmin = loggedInUser.role === 'admin';
+            const isAuthor = loggedInUser.id === quiz.user_id;
+        
+            if (isAdmin || isAuthor) {
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerText = 'Delete Quiz';
+                deleteBtn.onclick = () => deleteQuiz(quiz.id);
+                quizElement.appendChild(deleteBtn);
+            }
+            document.getElementById('quiz-container').appendChild(quizElement);
+        }
         // ── Check answer ───────────────────────────────────────────────────
 
         function checkAnswer(el, chosen, correct) {
@@ -176,9 +189,8 @@
             section.querySelector('#question-counter').textContent = 'Quiz complete!';
             document.getElementById('next-btn').style.display = 'none';
             document.getElementById('finish-btn').style.display = 'none';
-            document.getElementById('result').textContent = `🎉 Your score: ${score} / ${questions.length * 10}`;
+            document.getElementById('result').textContent = `Your score: ${score} / ${questions.length * 10}`;
 
-            // Try to submit score (silently skip if not logged in)
             try {
                 await fetch(`/api/quizzes/${currentQuizId}/scores`, {
                     method: 'POST',
