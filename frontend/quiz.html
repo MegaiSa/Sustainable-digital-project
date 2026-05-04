@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz — Sustainable Digital Project</title>
     <link rel="stylesheet" href="styles.css">
-    
+
 </head>
 <body>
     <nav>
@@ -19,7 +19,7 @@
             </li>
         </ul>
     </nav>
-
+    <p>Welcome, <span id="user-name"></span>!</p>
     <section id="quiz-picker">
         <h2>Choose a Quiz</h2>
         <select id="quiz-select">
@@ -49,11 +49,11 @@
             try {
                 const res = await fetch('/api/me');
                 const data = await res.json();
-                if (data.loggedIn) {
-                    document.getElementById('user-name').textContent = data.username;
-                    document.getElementById('nav-logout').style.display = '';
-                    document.getElementById('nav-auth').style.display = 'none';
-                }
+                    if (data.loggedIn) {
+                        document.getElementById('user-name').textContent = data.username;
+                        document.getElementById('nav-logout').style.display = '';
+                        document.getElementById('nav-auth').style.display = 'none';
+                    }
             } catch (_) {}
         }
 

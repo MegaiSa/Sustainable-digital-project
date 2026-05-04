@@ -196,7 +196,7 @@ section,
   font-size: 0.95rem;
 }
 
-#quiz-picker button {
+#quiz-picker button, #next-btn, #finish-btn {
   width: 100%;
   padding: 12px 14px;
   margin-top: 12px;
