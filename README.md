@@ -1,74 +1,74 @@
-# Sustainable Digital Project — Setup Guide
+# Sustainable Digital Project — Interactive Quiz Platform
 
-## Project Structure
+## 1. Project Description
+The **Sustainable Digital Project** is a lightweight, eco-conscious web application designed to host and manage quizzes with a primary focus on Digital Sustainability knowledge. The platform allows users to register, create their own quizzes, and compete on a global leaderboard, all while maintaining a minimal digital footprint through optimized backend and database structures. This project serves as a practical implementation of Green IT principles in web development.
 
-```
+## 2. Deployed Site
+You can access the live version of the project here:  
+**[👉 Click here to view the Deployed Site](https://sustainabledigital.vendredicorp.fr/)**
+
+## 3. Team Members and Roles
+| Name | Role | Responsibilities |
+| :--- | :--- | :--- |
+| **Anthony Varela** | Database | SQL schema design, SQLite optimization, and data persistence. |
+| **Louis Demoy** | Frontend | UI/UX design, sustainable CSS, and client-side logic. |
+| **Tristan Pichard** | Backend | Server-side logic, API development. |
+
+## 4. Technical Stack & Green IT Justification
+The project was built using a "Lean" architecture to minimize energy consumption and resource usage.
+
+*   **Hosting:** **Raspberry Pi** — Chosen for its extremely low power consumption (under 7W), significantly reducing the carbon footprint compared to standard high-performance servers.
+*   **Runtime:** **Node.js** with **Express.js** — Selected for its asynchronous nature, allowing for high concurrency with low CPU overhead.
+*   **Database:** **SQLite3** — A serverless, file-based database that eliminates the need for a separate database server process, reducing idle energy consumption.
+*   **Green IT Optimizations:**
+    *   **SQL Indexing:** Optimized indexes ensure minimal disk I/O and faster query execution.
+    *   **Minimalist Frontend:** CSS-only styling without heavy JavaScript frameworks to reduce client-side CPU processing.
+
+## 5. Installation & Local Setup
+Follow these steps to run the project on your local machine.
+
+### Prerequisites
+*   Node.js (v18+ recommended)
+*   npm
+
+### Steps
+1.  **Clone the repository:**
+    ```bash
+    git clone [https://github.com/megaisa/sustainable-digital-project.git](https://github.com/megaisa/sustainable-digital-project.git)
+    cd sustainable-digital-project
+    ```
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+3.  **Run the application:**
+    ```bash
+    npm start
+    ```
+4.  **Access the site:**
+    Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 6. Repository Structure
+```text
 project-root/
-├── server.js              ← Express backend (NEW)
-├── package.json           ← Updated with dependencies
-├── database/
-│   ├── db.js              ← Fixed (author_id bug)
-│   └── init.sql           ← Unchanged
-└── frontend/
-    ├── index.html         ← Live leaderboard (UPDATED)
-    ├── quiz.html          ← Fully wired to API (UPDATED)
-    ├── register.html      ← Auth forms wired to API (UPDATED)
-    └── styles.css         ← Unchanged
+├── .github/workflows/    ← Automated Docker build pipeline
+├── database/             ← Database logic and persistence
+│   ├── db.js             ← Connection logic and CRUD queries
+│   ├── init.sql          ← Schema definition with performance indexes
+│   └── database.db       ← SQLite data file
+├── frontend/             ← Client-side static assets
+│   ├── index.html        ← Landing page & Global Leaderboard
+│   ├── quiz.html         ← Interactive Quiz interface
+│   ├── register.html     ← User registration
+│   ├── handler.html      ← Quiz management interface
+│   └── styles.css        ← Eco-friendly UI styling
+├── server.js             ← Express server and API endpoints
+├── Dockerfile            ← Optimized Alpine-based Docker config
+├── package.json          ← Project metadata and dependencies
+└── README.md             ← Project documentation
 ```
 
-## Installation
+## 7. Project Report
+For a detailed analysis of the project's sustainability impact and technical choices, please refer to our full report :
 
-```bash
-npm install
-```
-
-## Run
-
-```bash
-# Production
-npm start
-
-# Development (auto-restart on file changes)
-npm run dev
-```
-
-The server starts at **http://localhost:3000**
-
----
-
-## API Reference
-
-### Auth
-| Method | Route | Body | Description |
-|--------|-------|------|-------------|
-| POST | `/api/register` | `{ nickname, email, password, confirmPassword }` | Create account |
-| POST | `/api/login` | `{ email, password }` | Log in |
-| POST | `/api/logout` | — | Log out |
-| GET  | `/api/me` | — | Current session info |
-
-### Quizzes
-| Method | Route | Auth | Description |
-|--------|-------|------|-------------|
-| GET  | `/api/quizzes` | No | List all quizzes |
-| POST | `/api/quizzes` | ✅ | Create a quiz `{ title, difficulty }` |
-| DELETE | `/api/quizzes/:id` | ✅ (author only) | Delete a quiz |
-
-### Questions
-| Method | Route | Auth | Description |
-|--------|-------|------|-------------|
-| GET  | `/api/quizzes/:id/questions` | No | Get questions for a quiz |
-| POST | `/api/quizzes/:id/questions` | ✅ (author only) | Add a question |
-
-### Scores & Leaderboard
-| Method | Route | Auth | Description |
-|--------|-------|------|-------------|
-| POST | `/api/quizzes/:id/scores` | ✅ | Submit score `{ score }` |
-| GET  | `/api/quizzes/:id/leaderboard` | No | Per-quiz leaderboard |
-| GET  | `/api/leaderboard` | No | Global leaderboard |
-
----
-
-## Bug Fixed
-
-`db.js` — `createQuiz` was inserting into column `user_id` which does not exist in the schema.
-The schema defines `author_id`. This has been corrected.
+[PDF Report](link)
