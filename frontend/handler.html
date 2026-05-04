@@ -30,14 +30,5 @@
             </li>
         </ul>
     </main>
-    <script>
-        function toggleEdit(checkbox) {
-            const li = checkbox.closest('li');
-            const inputs = li.querySelectorAll('input[type="text"]');
-            inputs.forEach(input => {
-                input.readonly = !checkbox.checked;
-            });
-        }
-    </script>
 </body>
 </html>
