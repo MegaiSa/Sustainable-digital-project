@@ -101,16 +101,6 @@ const saveUserScore = (userId, quizId, score, callback) => {
     });
 };
 
-<<<<<<< HEAD
-=======
-const getQuizOwner = (quizId, callback) => {
-    const sql = `SELECT author_id FROM quizzes WHERE id = ?`;
-    db.get(sql, [quizId], (err, row) => {
-        callback(err, row);
-    });
-};
-
->>>>>>> bb70a137e05cf74486bbd7d67757ff4b42a80291
 // Create a new user (Sign-up)
 const registerUser = (username, email, passwordHash, callback) => {
     const sql = `INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)`;
