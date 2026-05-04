@@ -22,55 +22,16 @@
     <main class="container">
         <h1>All Quizzes</h1>
         <p>View all quizzes, create a new quiz, or return to the homepage.</p>
-        <button class="create-quiz" onclick="createQuiz()">Create a Quiz</button>
-        <ul class="quiz-list">
-            <li>
-                <p>Quiz 1</p>
-                <ul class="question-list">
-                <button onclick="toggle();">Show questions</button>
-                <div id="questions" hidden>
-                <li>
-                    <p>Question 1: How much energy does a typical computer consume per hour?</p>
-                    <input type="text" value="50 watts" placeholder="Option 1" readonly>
-                    <input type="text" value="100 watts" placeholder="Option 2" readonly>
-                    <input type="text" value="200 watts" placeholder="Option 3" readonly>
-                    <input type="text" value="500 watts" placeholder="Option 4" readonly>
-                    <button class="delete-btn" onclick="deleteCategory(this)">Delete Question</button>
-                </li>
-                <li>
-                    <p>Question 2: How much energy does a typical computer consume per hour?</p>
-                    <input type="text" value="50 watts" placeholder="Option 1" readonly>
-                    <input type="text" value="100 watts" placeholder="Option 2" readonly>
-                    <input type="text" value="200 watts" placeholder="Option 3" readonly>
-                    <input type="text" value="500 watts" placeholder="Option 4" readonly>
-                    <button class="delete-btn" onclick="deleteCategory(this)">Delete Question</button>
-                </li>
-                <button class="create-qst" onclick="createQuestion(this)">Add a Question</button>
-                </div>
-            </li>
-            <button class="delete-btn" onclick="deleteCategory(this)">Delete Quiz</button>
+        <button class="create-quiz container button" onclick="createQuiz()">Create a Quiz</button>
+        
+        <!-- We will inject the quizzes here -->
+        <ul id="dynamic-quiz-list" class="quiz-list">
+            <li>Loading quizzes...</li>
         </ul>
     </main>
+
     <script>
-        let toggle = () => {
-            let element = document.getElementById("questions");
-            let button = document.querySelector("button[onclick='toggle();']");
-            let hidden = element.getAttribute("hidden");
-
-            if (hidden) {
-                element.removeAttribute("hidden");
-                button.textContent = "Hide questions";
-            } else {
-                element.setAttribute("hidden", "hidden");
-                button.textContent = "Show questions";
-            }
-        }
-
-        function logout() {
-            fetch('/api/logout', { method: 'POST' })
-                .then(() => window.location.reload())
-                .catch(() => window.location.reload());
-        }
+        let currentUser = null;
 
         async function checkSession() {
             try {
@@ -78,58 +39,122 @@
                 const data = await res.json();
                 const authLink = document.getElementById('nav-auth');
                 if (data.loggedIn) {
-                    if (authLink) authLink.style.display = 'none';
-                    document.getElementById('user-name').textContent = data.username;
-                    document.getElementById('nav-logout').style.display = '';
-                    document.getElementById('nav-auth').style.display = 'none';
-                } else if (authLink) {
-                    authLink.style.display = '';
+                    currentUser = data;
+                    document.getElementById('nav-auth').textContent = 'My Account';
                 }
-                loadQuizzes(); // Load quizzes after we know who is logged in
+                loadQuizzes();
             } catch (err) {
                 console.error("Session check failed");
             }
         }
 
-        let currentUser = null;
-
-        // 2. Fetch and render quizzes dynamically
         async function loadQuizzes() {
             const list = document.getElementById('dynamic-quiz-list');
             try {
                 const res = await fetch('/api/quizzes');
+                if (!res.ok) throw new Error("Failed to fetch quizzes from server.");
                 const quizzes = await res.json();
                 
-                list.innerHTML = ''; // Clear loading text
+                list.innerHTML = ''; 
                 
-                quizzes.forEach(quiz => {
+                for (const quiz of quizzes) {
                     const li = document.createElement('li');
-                    li.innerHTML = `<strong>${quiz.title}</strong> (${quiz.difficulty})`;
                     
-                    // Permission Check: Admin OR the user who created it
-                    if (currentUser && (currentUser.role === 'admin' || currentUser.userId === quiz.user_id)) {
-                        const delBtn = document.createElement('button');
-                        delBtn.className = 'delete-btn';
-                        delBtn.style.marginLeft = '10px';
-                        delBtn.innerText = 'Delete';
-                        delBtn.onclick = () => deleteQuiz(quiz.id);
-                        li.appendChild(delBtn);
+                    const titleP = document.createElement('p');
+                    titleP.innerHTML = `<strong>${quiz.title}</strong> (${quiz.difficulty})`;
+                    li.appendChild(titleP);
+
+                    // Permission Check
+                    const hasAccess = currentUser && (currentUser.role === 'admin' || currentUser.userId === quiz.user_id);
+
+                    const qRes = await fetch(`/api/quizzes/${quiz.id}/questions`);
+                    if (!qRes.ok) throw new Error(`Failed to fetch questions for quiz ${quiz.id}`);
+                    const questions = await qRes.json();
+
+                    const qList = document.createElement('ul');
+                    qList.className = 'question-list';
+                    
+                    const toggleBtn = document.createElement('button');
+                    toggleBtn.textContent = 'Show questions';
+                    
+                    const questionsDiv = document.createElement('div');
+                    questionsDiv.hidden = true;
+
+                    toggleBtn.onclick = () => {
+                        questionsDiv.hidden = !questionsDiv.hidden;
+                        toggleBtn.textContent = questionsDiv.hidden ? 'Show questions' : 'Hide questions';
+                    };
+                    qList.appendChild(toggleBtn);
+
+                    questions.forEach((q, index) => {
+                        const qLi = document.createElement('li');
+                        
+                        // We remove 'readonly' and add specific class names to grab the values later
+                        qLi.innerHTML = `
+                            <p style="margin-top: 15px;"><strong>Question ${index + 1}:</strong></p>
+                            <input type="text" class="edit-text" value="${q.question_text}" style="margin-bottom: 10px;">
+                            
+                            <label>Option A:</label> <input type="text" class="edit-opt-a" value="${q.option_a}">
+                            <label>Option B:</label> <input type="text" class="edit-opt-b" value="${q.option_b}">
+                            <label>Option C:</label> <input type="text" class="edit-opt-c" value="${q.option_c}">
+                            <label>Option D:</label> <input type="text" class="edit-opt-d" value="${q.option_d}">
+                            
+                            <p style="font-size: 0.9rem; color: var(--accent); font-weight: bold;">
+                                Correct Answer (A, B, C, D): 
+                                <input type="text" class="edit-correct" value="${q.correct_answer}" style="width: 50px; text-align: center; display: inline-block;">
+                            </p>
+                        `;
+
+                        if (hasAccess) {
+                            // The new SAVE button
+                            const saveQstBtn = document.createElement('button');
+                            saveQstBtn.className = 'create-qst'; // Reusing your green button style
+                            saveQstBtn.style.marginRight = '10px';
+                            saveQstBtn.textContent = 'Save Changes';
+                            saveQstBtn.onclick = () => saveQuestionChanges(q.id, qLi);
+                            qLi.appendChild(saveQstBtn);
+
+                            // The existing DELETE button
+                            const delQstBtn = document.createElement('button');
+                            delQstBtn.className = 'delete-btn';
+                            delQstBtn.textContent = 'Delete Question';
+                            delQstBtn.onclick = () => deleteQuestion(q.id);
+                            qLi.appendChild(delQstBtn);
+                        }
+                        questionsDiv.appendChild(qLi);
+                    });
+
+                    if (hasAccess) {
+                        const addQstBtn = document.createElement('button');
+                        addQstBtn.className = 'create-qst';
+                        addQstBtn.textContent = 'Add a Question';
+                        addQstBtn.onclick = () => createQuestion(quiz.id);
+                        questionsDiv.appendChild(addQstBtn);
                     }
-                    
+
+                    qList.appendChild(questionsDiv);
+                    li.appendChild(qList);
+
+                    if (hasAccess) {
+                        const delQuizBtn = document.createElement('button');
+                        delQuizBtn.className = 'delete-btn';
+                        delQuizBtn.textContent = 'Delete Quiz';
+                        delQuizBtn.onclick = () => deleteQuiz(quiz.id);
+                        li.appendChild(delQuizBtn);
+                    }
+
                     list.appendChild(li);
-                });
+                }
             } catch (err) {
-                list.innerHTML = '<li>Error loading quizzes.</li>';
+                console.error("The actual error is:", err); 
+                list.innerHTML = '<li>Error loading quizzes. Check the console for details.</li>';
             }
         }
 
-        // 3. Create a Quiz logic
         async function createQuiz() {
             if (!currentUser) return alert("You must be logged in to create a quiz!");
-            
             const title = prompt("Enter quiz title:");
             const difficulty = prompt("Enter difficulty (Easy, Medium, Hard):", "Medium");
-            
             if (!title || !difficulty) return;
 
             try {
@@ -138,39 +163,86 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title, difficulty })
                 });
-                
-                if (res.ok) {
-                    alert("Quiz created!");
-                    loadQuizzes(); // Refresh the list
-                } else {
-                    const errorData = await res.json();
-                    alert("Error: " + errorData.error);
-                }
-            } catch (err) {
-                alert("Network error.");
-            }
+                if (res.ok) loadQuizzes();
+                else alert("Error: " + (await res.json()).error);
+            } catch (err) { alert("Network error."); }
         }
 
-        // 4. Delete a Quiz logic
         async function deleteQuiz(quizId) {
-            if (!confirm("Are you sure you want to delete this quiz?")) return;
+            if (!confirm("Are you sure you want to delete this quiz? All questions will be lost.")) return;
+            try {
+                const res = await fetch(`/api/quizzes/${quizId}`, { method: 'DELETE' });
+                if (res.ok) loadQuizzes();
+                else alert("Error: " + (await res.json()).error);
+            } catch (err) { alert("Network error."); }
+        }
+
+        async function createQuestion(quizId) {
+            const text = prompt("Enter the question:");
+            if (!text) return;
+            const optA = prompt("Option A:");
+            const optB = prompt("Option B:");
+            const optC = prompt("Option C:");
+            const optD = prompt("Option D:");
+            const correct = prompt("Correct Answer Letter (A, B, C, or D):");
+
+            if (!optA || !optB || !optC || !optD || !correct) return alert("All fields required!");
 
             try {
-                const res = await fetch(`/api/quizzes/${quizId}`, {
-                    method: 'DELETE'
+                const res = await fetch(`/api/quizzes/${quizId}/questions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question_text: text,
+                        option_a: optA, option_b: optB, option_c: optC, option_d: optD,
+                        correct_answer: correct.toUpperCase()
+                    })
+                });
+                if (res.ok) loadQuizzes();
+                else alert("Error: " + (await res.json()).error);
+            } catch (err) { alert("Network error."); }
+        }
+
+        async function deleteQuestion(questionId) {
+            if (!confirm("Delete this question?")) return;
+            try {
+                const res = await fetch(`/api/questions/${questionId}`, { method: 'DELETE' });
+                if (res.ok) loadQuizzes();
+                else alert("Error: " + (await res.json()).error);
+            } catch (err) { alert("Network error."); }
+        }
+
+        async function saveQuestionChanges(questionId, listItemElement) {
+            const text = listItemElement.querySelector('.edit-text').value;
+            const optA = listItemElement.querySelector('.edit-opt-a').value;
+            const optB = listItemElement.querySelector('.edit-opt-b').value;
+            const optC = listItemElement.querySelector('.edit-opt-c').value;
+            const optD = listItemElement.querySelector('.edit-opt-d').value;
+            const correct = listItemElement.querySelector('.edit-correct').value.toUpperCase();
+
+            if (!text || !optA || !optB || !optC || !optD || !correct) return alert("All fields required!");
+            if (!['A', 'B', 'C', 'D'].includes(correct)) return alert("Correct answer must be A, B, C, or D.");
+
+            try {
+                const res = await fetch(`/api/questions/${questionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question_text: text,
+                        option_a: optA, option_b: optB, option_c: optC, option_d: optD,
+                        correct_answer: correct
+                    })
                 });
                 
                 if (res.ok) {
-                    loadQuizzes(); // Refresh the list
+                    alert("Changes saved successfully!");
+                    loadQuizzes();
                 } else {
-                    const errorData = await res.json();
-                    alert("Error: " + errorData.error);
+                    alert("Error: " + (await res.json()).error);
                 }
-            } catch (err) {
-                alert("Network error.");
-            }
+            } catch (err) { alert("Network error."); }
         }
-        
+
         // Start the process
         checkSession();
     </script>

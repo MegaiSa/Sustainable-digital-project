@@ -77,7 +77,7 @@ BEFORE INSERT ON quizzes
 FOR EACH ROW
 BEGIN
     SELECT CASE
-        WHEN (SELECT COUNT(*) FROM quizzes WHERE author_id = NEW.author_id) >= 5
+        WHEN (SELECT COUNT(*) FROM quizzes WHERE author_id = NEW.user_id) >= 5
         THEN RAISE(ABORT, 'Quiz limit reached. Please delete an existing quiz before creating a new one.')
     END;
 END;
