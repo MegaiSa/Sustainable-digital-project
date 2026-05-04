@@ -69,6 +69,4 @@ project-root/
 ```
 
 ## 7. Project Report
-For a detailed analysis of the project's sustainability impact and technical choices, please refer to our full report :
-
-[PDF Report](link)
+[Click here to read the Final Technical Report (PDF)](./docs/Report_TI616_TeamX.pdf)
