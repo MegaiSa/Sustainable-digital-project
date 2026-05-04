@@ -13,6 +13,9 @@
             <li><a href="quiz.html">Quiz</a></li>
             <li><a href="handler.html">Make a Quiz</a></li>
             <li><a href="register.html">Register</a></li>
+            <li id="nav-logout" style="display:none;">
+                <a href="#" onclick="logout()">Log out</a>
+            </li>
         </ul>
     </nav>
     <p>Welcome, <span id="user-name"></span>!</p>
@@ -65,6 +68,7 @@
                 const data = await res.json();
                     if (data.loggedIn) {
                         document.getElementById('user-name').textContent = data.username;
+                        document.getElementById('nav-logout').style.display = '';
                     }
             } catch (_) {}
         }

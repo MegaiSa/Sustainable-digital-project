@@ -13,6 +13,9 @@
             <li><a href="quiz.html">Quiz</a></li>
             <li><a href="handler.html">Make a Quiz</a></li>
             <li><a href="register.html" id="nav-auth">Register</a></li>
+            <li id="nav-logout" style="display:none;">
+                <a href="#" onclick="logout()">Log out</a>
+            </li>
         </ul>
     </nav>
     <p>Welcome, <span id="user-name"></span>!</p>
@@ -62,22 +65,33 @@
                 button.textContent = "Show questions";
             }
         }
-        let currentUser = null;
 
-        // 1. Fetch current user session to get ID and Role
+        function logout() {
+            fetch('/api/logout', { method: 'POST' })
+                .then(() => window.location.reload())
+                .catch(() => window.location.reload());
+        }
+
         async function checkSession() {
             try {
                 const res = await fetch('/api/me');
                 const data = await res.json();
+                const authLink = document.getElementById('nav-auth');
                 if (data.loggedIn) {
-                    currentUser = data;
-                    document.getElementById('user-name').textContent = currentUser.username;
+                    if (authLink) authLink.style.display = 'none';
+                    document.getElementById('user-name').textContent = data.username;
+                    document.getElementById('nav-logout').style.display = '';
+                    document.getElementById('nav-auth').style.display = 'none';
+                } else if (authLink) {
+                    authLink.style.display = '';
                 }
                 loadQuizzes(); // Load quizzes after we know who is logged in
             } catch (err) {
                 console.error("Session check failed");
             }
         }
+
+        let currentUser = null;
 
         // 2. Fetch and render quizzes dynamically
         async function loadQuizzes() {

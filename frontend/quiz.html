@@ -13,6 +13,9 @@
             <li><a href="quiz.html">Quiz</a></li>
             <li><a href="handler.html">Make a Quiz</a></li>
             <li><a href="register.html">Register</a></li>
+            <li id="nav-logout" style="display:none;">
+                <a href="#" onclick="logout()">Log out</a>
+            </li>
         </ul>
     </nav>
 
@@ -40,6 +43,18 @@
         let score = 0;
         let answered = false;
         let currentQuizId = null;
+
+        async function checkSession() {
+            try {
+                const res = await fetch('/api/me');
+                const data = await res.json();
+                if (data.loggedIn) {
+                    document.getElementById('user-name').textContent = data.username;
+                    document.getElementById('nav-logout').style.display = '';
+                    document.getElementById('nav-auth').style.display = 'none';
+                }
+            } catch (_) {}
+        }
 
         // ── Load quiz list ──────────────────────────────────────────────────
 
