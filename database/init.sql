@@ -1,23 +1,25 @@
 -- Database Initialization Script
-
+/*
 PRAGMA foreign_keys = OFF;
 DROP TABLE IF EXISTS scores;
 DROP TABLE IF EXISTS questions;
 DROP TABLE IF EXISTS quizzes;
 DROP TABLE IF EXISTS users;
 PRAGMA foreign_keys = ON;
+*/ 
 
 -- 1. USERS TABLE
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
     email TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    role TEXT DEFAULT 'user'
 );
 
 -- 2. QUIZZES TABLE 
-CREATE TABLE quizzes (
+CREATE TABLE IF NOT EXISTS quizzes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     description TEXT,
@@ -29,7 +31,7 @@ CREATE TABLE quizzes (
 );
 
 -- 3. QUESTIONS TABLE
-CREATE TABLE questions (
+CREATE TABLE IF NOT EXISTS questions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     quiz_id INTEGER NOT NULL,
     question_text TEXT NOT NULL,
@@ -42,7 +44,7 @@ CREATE TABLE questions (
 );
 
 -- 4. SCORES TABLE (The link between Users and Quizzes)
-CREATE TABLE scores (
+CREATE TABLE IF NOT EXISTS scores (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     quiz_id INTEGER NOT NULL,
@@ -60,8 +62,8 @@ CREATE INDEX idx_scores_user ON scores(user_id);
 CREATE INDEX idx_scores_quiz ON scores(quiz_id);
 
 -- 6. SEED DATA (For Demo Purposes)
-INSERT INTO users (username, email, password_hash) 
-VALUES ('EcoUser', 'test@efrei.fr', 'hashed_password_here');
+INSERT INTO users (username, email, password_hash, role) 
+VALUES ('EcoUser', 'test@efrei.fr', 'hashed_password_here', 'admin');
 
 INSERT INTO quizzes (title, description, difficulty, author_id) 
 VALUES ('Digital Sustainability', 'Test your knowledge on IT impact.', 'Easy', 1);
