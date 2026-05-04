@@ -63,7 +63,7 @@ CREATE INDEX idx_scores_quiz ON scores(quiz_id);
 
 -- 6. SEED DATA (For Demo Purposes)
 INSERT INTO users (username, email, password_hash, role) 
-VALUES ('EcoUser', 'test@efrei.fr', 'hashed_password_here', 'admin');
+VALUES ('EcoUser', 'test@efrei.fr', '$2a$12$tAMi5uNSGDlUMz5WwO8qtOpm6SvV6aHtlrTyRI83DIArSJdOln.3e', 'admin');
 
 INSERT INTO quizzes (title, description, difficulty, user_id) 
 VALUES ('Digital Sustainability', 'Test your knowledge on IT impact.', 'Easy', 1);
