@@ -18,9 +18,9 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: false,          // set true if using HTTPS
+        secure: false,
         httpOnly: true,
-        maxAge: 1000 * 60 * 60  // 1 hour
+        maxAge: 1000 * 60 * 60
     }
 }));
 
@@ -35,10 +35,6 @@ function requireAuth(req, res, next) {
 
 // ─── Auth routes ──────────────────────────────────────────────────────────────
 
-/**
- * POST /api/register
- * Body: { nickname, email, password, confirmPassword }
- */
 app.post('/api/register', async (req, res) => {
     const { nickname, email, password, confirmPassword } = req.body;
 
@@ -72,10 +68,6 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-/**
- * POST /api/login
- * Body: { email, password }
- */
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
 
@@ -108,9 +100,6 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-/**
- * POST /api/logout
- */
 app.post('/api/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) return res.status(500).json({ error: 'Could not log out.' });
@@ -119,9 +108,6 @@ app.post('/api/logout', (req, res) => {
     });
 });
 
-/**
- * GET /api/me  — return current session info
- */
 app.get('/api/me', (req, res) => {
     if (!req.session.userId) {
         return res.status(401).json({ loggedIn: false });
@@ -131,9 +117,6 @@ app.get('/api/me', (req, res) => {
 
 // ─── User routes ──────────────────────────────────────────────────────────────
 
-/**
- * GET /api/users  — list all users (id + username only)
- */
 app.get('/api/users', requireAuth, (req, res) => {
     db.getAllUsers((err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -141,9 +124,6 @@ app.get('/api/users', requireAuth, (req, res) => {
     });
 });
 
-/**
- * GET /api/users/:id
- */
 app.get('/api/users/:id', requireAuth, (req, res) => {
     db.getUserById(req.params.id, (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -154,9 +134,18 @@ app.get('/api/users/:id', requireAuth, (req, res) => {
 
 // ─── Quiz routes ──────────────────────────────────────────────────────────────
 
-/**
- * GET /api/quizzes  — list all quizzes
- */
+app.post('/quizzes', async (req, res) => {
+    const { title } = req.body;
+    const userId = req.session.user.id;
+
+    try {
+        await db.query('INSERT INTO quizzes (title, user_id) VALUES (?, ?)', [title, userId]);
+        res.status(201).send('Quiz created successfully');
+    } catch (err) {
+        res.status(500).send('Error creating quiz');
+    }
+});
+
 app.get('/api/quizzes', (req, res) => {
     db.getAllQuizzes((err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -164,10 +153,6 @@ app.get('/api/quizzes', (req, res) => {
     });
 });
 
-/**
- * POST /api/quizzes  — create a new quiz (auth required)
- * Body: { title, difficulty }
- */
 app.post('/api/quizzes', requireAuth, (req, res) => {
     const { title, difficulty } = req.body;
 
@@ -185,9 +170,6 @@ app.post('/api/quizzes', requireAuth, (req, res) => {
     });
 });
 
-/**
- * DELETE /api/quizzes/:id  — delete a quiz (only the author)
- */
 app.delete('/api/quizzes/:id', requireAuth, (req, res) => {
     db.getQuizOwner(req.params.id, (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -202,11 +184,36 @@ app.delete('/api/quizzes/:id', requireAuth, (req, res) => {
     });
 });
 
+app.delete('/quizzes/:id', async (req, res) => {
+    const quizId = req.params.id;
+    const currentUser = req.session.user; // Get logged-in user
+
+    if (!currentUser) {
+        return res.status(401).send('You must be logged in.');
+    }
+
+    try {
+        if (currentUser.role === 'admin') {
+            // ADMIN: Can delete any quiz, no questions asked
+            await db.query('DELETE FROM quizzes WHERE id = ?', [quizId]);
+            return res.send('Quiz deleted by admin.');
+        } else {
+            // NORMAL USER: Can only delete if their ID matches the quiz's user_id
+            const result = await db.query('DELETE FROM quizzes WHERE id = ? AND user_id = ?', [quizId, currentUser.id]);
+            
+            // Check if a row was actually deleted
+            if (result.affectedRows === 0) {
+                return res.status(403).send('Forbidden: You can only delete your own quizzes.');
+            }
+            return res.send('Quiz deleted successfully.');
+        }
+    } catch (err) {
+        res.status(500).send('Database error');
+    }
+});
+
 // ─── Question routes ──────────────────────────────────────────────────────────
 
-/**
- * GET /api/quizzes/:id/questions
- */
 app.get('/api/quizzes/:id/questions', (req, res) => {
     db.getQuestionsByQuizId(req.params.id, (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -214,10 +221,6 @@ app.get('/api/quizzes/:id/questions', (req, res) => {
     });
 });
 
-/**
- * POST /api/quizzes/:id/questions  — add a question (author only)
- * Body: { question_text, option_a, option_b, option_c, option_d, correct_answer }
- */
 app.post('/api/quizzes/:id/questions', requireAuth, (req, res) => {
     const { question_text, option_a, option_b, option_c, option_d, correct_answer } = req.body;
 
@@ -248,10 +251,6 @@ app.post('/api/quizzes/:id/questions', requireAuth, (req, res) => {
 
 // ─── Score routes ─────────────────────────────────────────────────────────────
 
-/**
- * POST /api/quizzes/:id/scores  — submit a score
- * Body: { score }
- */
 app.post('/api/quizzes/:id/scores', requireAuth, (req, res) => {
     const { score } = req.body;
     if (score === undefined || score === null) {
@@ -264,9 +263,6 @@ app.post('/api/quizzes/:id/scores', requireAuth, (req, res) => {
     });
 });
 
-/**
- * GET /api/quizzes/:id/leaderboard?limit=10
- */
 app.get('/api/quizzes/:id/leaderboard', (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     db.getLeaderboardByQuiz(req.params.id, limit, (err, rows) => {
@@ -277,9 +273,6 @@ app.get('/api/quizzes/:id/leaderboard', (req, res) => {
 
 // ─── Global leaderboard (across all quizzes) ──────────────────────────────────
 
-/**
- * GET /api/leaderboard?limit=10
- */
 app.get('/api/leaderboard', (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const sql = `
