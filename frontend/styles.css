@@ -108,14 +108,11 @@ section,
 
 #quiz #options {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 16px;
   list-style: none;
   padding: 0;
-  margin: 24px 0 0;
-  max-width: 480px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 16px 0 0;
 }
 
 #quiz #options li {
@@ -131,7 +128,6 @@ section,
 #quiz #options li:hover {
   background: rgba(42, 127, 98, 0.1);
   border-color: var(--accent-soft);
-  transform: translateY(-4px);
   box-shadow: 0 8px 16px rgba(42, 127, 98, 0.15);
 }
 
@@ -171,4 +167,16 @@ section,
 
 .container button:hover {
   background: var(--accent-soft);
+}
+
+.quiz-list li{
+  padding: 20px 16px;
+  background: var(--bg);
+  border: 2px solid var(--accent);
+  border-radius: 16px;
+  font-weight: 600;
+  color: var(--accent);
+  text-align: center;
+  margin: 16px 0;
+  list-style: none;
 }
