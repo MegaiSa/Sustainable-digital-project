@@ -4,26 +4,22 @@ WORKDIR /usr/src/app
 
 ENV PORT=3000
 ENV SESSION_SECRET="quiz-secret-change-in-prod"
+ENV NODE_ENV=production
 
-# Use production node environment by default.
-ENV NODE_ENV production
+# Ensure app directory is owned by node user
+RUN chown -R node:node /usr/src/app
 
-# Download dependencies as a separate step to take advantage of Docker's caching.
-# Leverage a cache mount to /root/.npm to speed up subsequent builds.
-# Leverage a bind mounts to package.json and package-lock.json to avoid having to copy them into
-# into this layer.
-RUN --mount=type=bind,source=package.json,target=package.json \
-    --mount=type=cache,target=/root/.npm \
-    npm install --omit=dev
-
-# Run the application as a non-root user.
+# Switch to non-root user BEFORE installing deps
 USER node
 
-# Copy the rest of the source files into the image.
-COPY . .
+# Install dependencies with correct ownership
+RUN --mount=type=bind,source=package.json,target=package.json \
+    --mount=type=cache,target=/home/node/.npm \
+    npm install --omit=dev
 
-# Expose the port that the application listens on.
+# Copy source files as node user
+COPY --chown=node:node . .
+
 EXPOSE 3000
 
-# Run the application.
-CMD node server.js
+CMD ["node", "server.js"]
